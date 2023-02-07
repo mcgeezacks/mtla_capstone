@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: int_products
+    description: One record per product with its english category translation and other product information. grain = product
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+      - name: category_name
+        tests:
+          - relationships:
+              to: ref('stg_product_category_name_translation')
+              field: english_category_name
+  - name: int_order_items
+    description: One record per unique item ordered connecting it to relevant order dates and product information. grain = item
+    columns:
+      - name: order_item_sk
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sellers')
+              field: seller_id
+      - name: review_date
+        description: the date of the most recent review on this order
+      - name: review_score
+        description: the score of the most recent review on this order
+  - name: int_order_payments
+    description: One record per order payment attaching purchased & approved date information to payments. grain = payment
+    columns:
+      - name: order_payment_id
+        tests:
+          - not_null
+          - unique
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+  - name: int_orders
+    description: One record per order syncing customer_id across orders, order_items, and customer tables by replacing the session_id used in orders with the customer_id. grain = order
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+          - unique
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id

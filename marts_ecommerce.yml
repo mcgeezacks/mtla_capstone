@@ -1,0 +1,113 @@
+version: 2
+
+models:
+  - name: fct_order_items
+    description: Table with facts about order items with one unique row per item ordered.  This table does not include items which cannot be associated to a seller_id or product_id which is usually indicative of an error early in the order process that resulted in a cancelled sale. grain = item
+    columns:
+      - name: order_item_sk
+        tests:
+          - not_null
+          - unique
+      - name: seller_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('int_orders')
+              field: order_id
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+  - name: fct_orders
+    description: One record per unique order including number of items and total value of the order. grain = order.
+    columns:
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('int_orders')
+              field: order_id
+      - name: customer_id
+        tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+  - name: dim_products
+    description: One record per unique product including information about that product's total sales, number of sales. grain = product.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - relationships:
+              to: ref('int_products')
+              field: product_id
+  - name: dim_customers
+    description: One record per unique customer including information about that customer's lifetime value, number of orders, and most recent address. grain = customer.
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique:
+              config:
+                store_failures: true
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+  - name: dim_sellers
+    description: One record per unique seller including information about that seller's lifetime value, number of orders, and geolocation information. grain = seller.
+    columns:
+      - name: seller_id
+        tests:
+          - unique:
+              config:
+                store_failures: true
+          - relationships:
+              to: ref('stg_sellers')
+              field: seller_id
+  - name: fct_order_payments
+    description: One record per payment on an order including relevant order and customer information. grain = payment.
+    columns:
+      - name: order_payment_id
+        tests:
+          - not_null
+          - unique
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_orders')
+              field: order_id
+      - name: payment_seq
+        description: column describing what number in the payment process this specific payment falls.  For instance if it is the 3rd payment on an order, payment_seq = 3
+      - name: payment_installments
+        description: column describing the total number of payments for a given order.  For instance if an order is paid for with a voucher & and a credit card it will have two payment installments so there will be two payment records on this table both of which have "2" in the payment_installments field.
+  - name: fct_order_reviews
+    description: One record per unique order review including information about that order's review history. grain = review.
+    columns:
+      - name: order_review_sk
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_orders')
+              field: order_id
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+      - name: review_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_order_reviews')
+              field: review_id

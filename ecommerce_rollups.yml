@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: monthly_product_category_reviews
+    description: table with monthly breakdown of product reviews by category
+    tests:
+      - dbt_utils.expression_is_true:
+          expression: "monthly_count_category_reviews >= 30"
+          config: 
+            store_failures: true
+    columns:
+      - name: product_category_month_sk
+        description: unique key for combined product category and year month
+        tests:
+          - unique:
+              config:
+                store_failures: true
+          - not_null:
+              config:
+                store_failures: true
+      - name: category_name
+        description: product category name in english
+      - name: review_date_month
+        description: the year and month which reviews are grouped by
+      - name: monthly_count_category_reviews
+        description: the count of reviews within a given product category and month
+      - name: monthly_average_review_score
+        description: the average review score for a product category and month
+      - name: monthly_median_review_score
+        description: the median review score for a product category and month
+      - name: monthly_count_1_reviews
+        description: the total number of reviews scores = 1 within a given product category in a given month
+      - name: monthly_count_2_reviews
+        description: the total number of reviews scores = 2 within a given product category in a given month
+      - name: monthly_count_3_reviews
+        description: the total number of reviews scores = 3 within a given product category in a given month
+      - name: monthly_count_4_reviews
+        description: the total number of reviews scores = 4 within a given product category in a given month
+      - name: monthly_count_5_reviews
+        description: the total number of reviews scores = 5 within a given product category in a given month
+      - name: monthly_total_count_reviews
+        description: total number of reviews within a given month across all product categories
+      - name: monthly_total_count_1_reviews
+        description: the total number of reviews scores = 1 within a given month across all product categories
+      - name: monthly_total_count_2_reviews
+        description: the total number of reviews scores = 2 within a given month across all product categories
+      - name: monthly_total_count_3_reviews
+        description: the total number of reviews scores = 3 within a given month across all product categories
+      - name: monthly_total_count_4_reviews
+        description: the total number of reviews scores = 4 within a given month across all product categories
+      - name: monthly_total_count_5_reviews
+        description: the total number of reviews scores = 5 within a given month across all product categories

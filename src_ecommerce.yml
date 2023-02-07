@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: ecommerce
+    database: ae-capstone-raw
+    schema: ecommerce
+    tables:
+      - name: customers
+        description: A table containing information about Amazonia customers.
+      - name: geolocations
+        description: A table containing geographic information.
+      - name: order_items
+        description: A table containing information for each item purchased on an Amazonia order.
+      - name: order_payments
+        description: A table containing payment information for Amazonia orders.
+      - name: order_reviews
+        description: A table containing information about reviews left by Amazonia customers
+      - name: orders
+        description: A table containing information about Amazonia orders.
+      - name: product_category_name_translation
+        description: A table for translating the Brazilian product category name into English.
+      - name: products
+        description: A table containing information about products sold via Amazonia.
+      - name: sellers
+        description: A table containing information about the sellers fulfilling orders via Amazonia. 

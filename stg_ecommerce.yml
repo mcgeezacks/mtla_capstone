@@ -1,0 +1,139 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Table with one row per unique customer session.  The same customer can have multiple sessions. grain = session
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+      - name: session_id
+        tests:
+          - not_null
+          - unique
+  - name: stg_geolocations
+    description: Table with one row per lat and longitude.
+    columns:
+      - name: geolocation_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_order_items
+    description: Table with one row per item in an order. grain = item.
+    columns:
+      - name: order_item_sk
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: seller_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sellers')
+              field: seller_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+  - name: stg_order_payments
+    description: Table with one row per payment on an order. An order can have multiple payments.  grain = payment
+    columns:
+      - name: order_payment_id
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+  - name: stg_order_reviews
+    description: Table with one row per review on an order.  An order can have multiple reviews. grain = review
+    columns:
+      - name: order_review_sk
+        tests:
+          - unique
+          - not_null
+      - name: review_date
+        tests:
+          - not_null
+      - name: order_id
+        tests:
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+  - name: stg_orders
+    description: Table with one row per order.  grain = order.
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: session_id
+        tests:
+          - relationships:
+              to: ref('stg_customers')
+              field: session_id
+      - name: order_status
+        tests:
+          - accepted_values:
+              values: ['created', 'shipped', 'approved', 'canceled', 'invoiced', 'delivered', 'processing', 'unavailable']
+      - name: approved_at
+        tests:
+          - null_threshold:
+              percent_threshold: 1
+              config:
+                store_failures: true
+          - null_threshold_time:
+              stable_date: purchased_at
+              percent_threshold: 12
+              date_part: year
+      - name: carrier_delivered_at
+        tests:
+          - null_threshold:
+              percent_threshold: 2
+              config:
+                store_failures: true
+          - null_threshold_time:
+              stable_date: purchased_at
+              date_part: year
+              percent_threshold: 15
+      - name: customer_delivered_at
+        tests:
+          - null_threshold:
+              percent_threshold: 4
+              config:
+                store_failures: true
+          - null_threshold_time:
+              stable_date: purchased_at
+              percent_threshold: 18
+              date_part: year
+  - name: stg_product_category_name_translation
+    description: Table with one row per product category name translation. grain = product category
+    columns:
+      - name: portuguese_category_name
+        tests:
+          - unique
+          - not_null
+  - name: stg_products
+    description: Table with one row per product. grain = product
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+  - name: stg_sellers
+    description: Table with one row per seller.  grain = seller
+    columns:
+      - name: seller_id
+        tests:
+          - unique
+          - not_null
